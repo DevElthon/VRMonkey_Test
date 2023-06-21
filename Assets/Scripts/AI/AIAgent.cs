@@ -334,6 +334,7 @@ public class AIAgent : MonoBehaviour {
         searchLight.enabled = false;
         stunParticles.Play();
         navAgent.ForceStop();
+        GameLogic.instance.RemoveChaser();
         aiEnabled = false;
         audioSource.PlayOneShot(AudioManager.getInstance().playerHit);
         character.energyLeft -= val;
