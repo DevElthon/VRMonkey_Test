@@ -22,10 +22,10 @@ public class DamageArea : MonoBehaviour {
 
     void OnCollisionEnter(Collision coll)
     {
-  //      if (coll.gameObject.layer == 9)
-    //    {
+        if (coll.gameObject.layer == 9)
+        {
             DestroyBullet();
-   //     }
+        }
     }
 
     void DestroyBullet(bool effect=true)

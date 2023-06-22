@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class StealthPlayerController : Character {
 
-    
     Camera cam;
     public Rigidbody rb;
-
+    bool isGrounded;
     public GameObject normalModel;
     public GameObject cloakedModel;
 
@@ -56,13 +55,17 @@ public class StealthPlayerController : Character {
     [Header("Skills")]
     public bool cloaked = false;
     public bool running = false;
+    public bool hover = false;
     public float runningSpeedMultiplier = 1.5f;
     public float runningEnergyMultiplier = 1.5f;
     public float cloakingEnergyMultiplier = 3.5f;
+    public float hoverEnergyMultiplier = 4.0f;
     public float drainingEnergyMultiplier = 4.0f;
     public float shockDelay = 0.3f;
     public float shockCost = 10;
     public float drainSpeed = 0;
+    public float hoverForce = 10f;      
+    public float hoverHeight = 2f;
     public GameObject shockObject;
 
     public GameObject drainObject;
@@ -80,6 +83,7 @@ public class StealthPlayerController : Character {
     public bool canCloak = false;
     public bool canDrain = false;
     public bool canShoot = false;
+    public bool canHover = false;
 
     public ParticleSystem warpParticles;
     
@@ -109,6 +113,17 @@ public class StealthPlayerController : Character {
             energyBar.SetInitialValues(maxEnergy, 0, energy);
         }
 	}
+
+    private bool GroundCheck()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -Vector3.up, out hit, hoverHeight))
+        {
+            return true;
+        }
+
+        return false;
+    }
 	
     public void SetEnergy(float val)
     {
@@ -187,14 +202,19 @@ public class StealthPlayerController : Character {
 
     // Update is called once per frame
     void Update() {
+        isGrounded = GroundCheck();
+
         if (GameLogic.instance.gameState != GameLogic.GameStates.gameplay)
         {
             return;
         }
 
-        if(energy > shotCost && Input.GetButtonDown("Shoot") && (state == States.idle || state == States.moving && canShoot)){
+        if(canShoot && !hover && energy > shotCost && Input.GetButtonDown("Shoot") && (state == States.idle || state == States.moving && canShoot)){
             Fire();
-            energy -= shockCost;
+            SpendEnergy(shotCost);
+            cloaked = false;
+            normalModel.SetActive(true);
+            cloakedModel.SetActive(false);
         }
 
         if (state == States.attacking)
@@ -204,7 +224,7 @@ public class StealthPlayerController : Character {
             }
         }
 
-        if (canDrain && Input.GetButtonDown("Drain") && (state == States.idle || state == States.moving))
+        if (canDrain && !hover && Input.GetButtonDown("Drain") && (state == States.idle || state == States.moving))
         {
             StopMovement();
             drainObject.SetActive(true);
@@ -228,7 +248,7 @@ public class StealthPlayerController : Character {
             }
         }
 
-        if (canShock && energy >= shockCost && Input.GetButtonDown("Shock") && (state == States.idle || state == States.moving))
+        if (canShock && !hover && energy >= shockCost && Input.GetButtonDown("Shock") && (state == States.idle || state == States.moving))
         {
 
             SpendEnergy(shockCost);
@@ -240,7 +260,7 @@ public class StealthPlayerController : Character {
             StartCoroutine(shockRoutine());
 
         }
-
+        //Usar isso como referencia para hover
         if (canCloak && Input.GetButtonDown("Cloak") && (state == States.idle || state == States.moving))
         {
             normalModel.SetActive(false);
@@ -258,8 +278,17 @@ public class StealthPlayerController : Character {
                 cloakedModel.SetActive(false);
             }
         }
-        
 
+        if(canHover && Input.GetButtonDown("Hover") && (state == States.idle || state == States.moving) && isGrounded){
+            hover = true;
+            rb.useGravity = false;
+        }
+        else{
+            if(hover && !Input.GetButton("Hover")){
+                hover = false;
+                rb.useGravity = true;
+            }
+        }
 
         if (state == States.idle && !cloaked)
         {
@@ -336,7 +365,7 @@ public class StealthPlayerController : Character {
         }
         if (enableEnergyDrain)
         {
-            float energyDrain= energyDrainSpeed * Time.deltaTime;
+            float energyDrain = energyDrainSpeed * Time.deltaTime;
 
             if (energy <= maxEnergy * lowEnergyFraction)
             {
@@ -350,6 +379,10 @@ public class StealthPlayerController : Character {
             if (cloaked)
             {
                 energyDrain = energyDrain * cloakingEnergyMultiplier;
+            }
+
+            if(hover){
+                energyDrain = energyDrain * hoverEnergyMultiplier;
             }
 
             if (!moving)
@@ -379,6 +412,32 @@ public class StealthPlayerController : Character {
             }
         }
         
+    }
+
+    private void FixedUpdate() {
+        if(hover){
+            float distanceToHoverHeight = hoverHeight - GetDistanceToGround();
+            Vector3 finalHoverForce = Vector3.zero;
+
+            if(distanceToHoverHeight <= 0){
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            }
+            else{
+                finalHoverForce = Vector3.up * distanceToHoverHeight * hoverForce;
+                rb.AddForce(finalHoverForce, ForceMode.Acceleration);
+            }
+        }
+    }
+
+    private float GetDistanceToGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -Vector3.up, out hit))
+        {
+            return hit.distance;
+        }
+
+        return float.MaxValue;
     }
 
     public ParticleSystem damageParticle;

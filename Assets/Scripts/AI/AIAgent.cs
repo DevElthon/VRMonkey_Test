@@ -331,12 +331,19 @@ public class AIAgent : MonoBehaviour {
 
     public void DealDamage(float val){
         StopAllCoroutines();
+        StartCoroutine(ShutDownEffect());
         searchLight.enabled = false;
-        stunParticles.Play();
         navAgent.ForceStop();
         GameLogic.instance.RemoveChaser();
         aiEnabled = false;
         audioSource.PlayOneShot(AudioManager.getInstance().playerHit);
         character.energyLeft -= val;
+        SetEnergyFraction(character.energyLeft);
+    }
+
+    IEnumerator ShutDownEffect(){
+        stunParticles.Play();
+        yield return new WaitForSeconds(1f);
+        stunParticles.Stop();
     }
 }

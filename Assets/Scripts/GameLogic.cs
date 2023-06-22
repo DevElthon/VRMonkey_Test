@@ -27,6 +27,8 @@ public class GameLogic : MonoBehaviour {
     public GameObject ShockText;
     public GameObject CloakText;
     public GameObject DrainText;
+    public GameObject ShootText;
+    public GameObject HoverText;
 
     public GameObject enemyContainer;
     public GameObject enemyModel;
@@ -185,6 +187,14 @@ public class GameLogic : MonoBehaviour {
                 player.canDrain = true;
                 DrainText.SetActive(true);
                 break;
+            case Upgrade.Type.shoot:
+                player.canShoot = true;
+                ShootText.SetActive(true);
+                break;
+             case Upgrade.Type.hover:
+                player.canHover = true;
+                HoverText.SetActive(true);
+                break;
         }
 
         StartCoroutine(EnablePlayerSkillRoutine(upgradeType));
@@ -198,7 +208,6 @@ public class GameLogic : MonoBehaviour {
             switch (upgradeType)
             {
                 case Upgrade.Type.shock:
-
                     ShowMessageBox("You acquired the SHOCK power! Press X to stun enemies!");
                     break;
                 case Upgrade.Type.cloak:
@@ -206,7 +215,12 @@ public class GameLogic : MonoBehaviour {
                     break;
                 case Upgrade.Type.drain:
                     ShowMessageBox("You acquired the DRAIN power! Press V to drain enemies' energy! ONLY WORKS ON UNAWARE ENEMIES");
-                    player.canDrain = true;
+                    break;
+                case Upgrade.Type.shoot:
+                    ShowMessageBox("You acquired the SHOOT power! Press SPACE to shoot your enemies!");
+                    break;
+                case Upgrade.Type.hover:
+                    ShowMessageBox("You acquired the HOVER power! Press B to hover and avoid enemies projectiles!");
                     break;
             }
         }
@@ -215,7 +229,6 @@ public class GameLogic : MonoBehaviour {
             switch (upgradeType)
             {
                 case Upgrade.Type.shock:
-
                     ShowMessageBox("You acquired the SHOCK power! Press X to stun enemies!");
                     break;
                 case Upgrade.Type.cloak:
@@ -223,7 +236,12 @@ public class GameLogic : MonoBehaviour {
                     break;
                 case Upgrade.Type.drain:
                     ShowMessageBox("You acquired the DRAIN power! Press Y to drain enemies' energy! ONLY WORKS ON UNAWARE ENEMIES");
-                    player.canDrain = true;
+                    break;
+                case Upgrade.Type.shoot:
+                    ShowMessageBox("You acquired the SHOOT power! Press RB to shoot your enemies!");
+                    break;
+                case Upgrade.Type.hover:
+                    ShowMessageBox("You acquired the HOVER power! Press LB to hover and avoid enemies projectiles!");
                     break;
             }
         }

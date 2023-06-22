@@ -113,8 +113,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   friend: 1
-  damage: 15
-  speed: 14
+  damage: 20
+  speed: 20
   lifetime: 2
 --- !u!82 &82059767791299000
 AudioSource:
