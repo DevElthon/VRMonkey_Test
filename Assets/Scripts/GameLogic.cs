@@ -23,6 +23,17 @@ public class GameLogic : MonoBehaviour {
 
     public BatteryPickup[] batteries;
     public AIAgent[] enemies;
+    public GameObject batteryPrefab;
+    public Transform[] batteriesSpawnPoints;
+    public int batteryCount = 0;
+    public float timeToSpawnBatteries = 5f;
+    public Door bossDoor;
+    public bool inBossBattle = false;
+    public Character boss;
+    public GameObject bossPrefab;
+    public Transform bossPosition;
+    public GameObject lastKey;
+    public GameObject battleTrigger;
 
     public GameObject ShockText;
     public GameObject CloakText;
@@ -47,6 +58,9 @@ public class GameLogic : MonoBehaviour {
     public GameObject gamepadKeys;
 
     public Text keyText;
+
+    public RectTransform fillBossRectTransform;
+    public RectTransform originalBossRectTransform;
 
     public void AddChaser()
     {
@@ -97,7 +111,6 @@ public class GameLogic : MonoBehaviour {
         batteries = GameObject.FindObjectsOfType<BatteryPickup>();
         enemies = GameObject.FindObjectsOfType<AIAgent>();
     }
-
     public void Start()
     {
         if (Input.GetJoystickNames().Length == 0)
@@ -133,6 +146,28 @@ public class GameLogic : MonoBehaviour {
         player.ResetEnergy();
     }
 
+    public void BossBattle(){
+        if(batteryCount < batteriesSpawnPoints.Length){
+            StartCoroutine(SpawnBatteries());
+        }
+    }
+
+    IEnumerator SpawnBatteries(){
+        for(int i = 0; i < batteriesSpawnPoints.Length; i++){
+            if(inBossBattle && batteryCount < batteriesSpawnPoints.Length){
+                Instantiate(batteryPrefab, batteriesSpawnPoints[batteryCount].transform.position, Quaternion.identity);
+                batteryCount += 1;
+                yield return new WaitForSeconds(timeToSpawnBatteries);
+                if(i == 3){
+                BossBattle();
+                }
+            }
+            else{
+                break;
+            }
+        }
+    }
+
     public void GameOver()
     {
         chasingEnemies = 0;
@@ -144,6 +179,15 @@ public class GameLogic : MonoBehaviour {
         player.warpParticles.Play();
         GameObject.Destroy(enemyContainer);
         enemyContainer= GameObject.Instantiate(enemyModel);
+        
+        if(inBossBattle){
+            fillBossRectTransform.sizeDelta = originalBossRectTransform.sizeDelta;
+            inBossBattle = false;
+            boss.energyLeft = boss.maxDrainEnergy;
+            battleTrigger.SetActive(true);
+            Destroy(boss.gameObject);
+            boss = GameObject.Instantiate(bossPrefab, bossPosition.transform.position, Quaternion.identity).GetComponent<Character>();
+        }
 
         for(int i = 0; i < batteries.Length; i++)
         {
@@ -272,6 +316,26 @@ public class GameLogic : MonoBehaviour {
                 unpausesound = false;
                 playerWheelSource.UnPause();
             }
+        }
+        if(inBossBattle){
+            player.canDrain = false;
+            player.canShock = false;
+            bossDoor.locked = true;
+            bossDoor.doorRenderer.material = bossDoor.lockedMaterial;
+            HUDManager.instance.ActivateBossHUD(true);
+        }
+        else{
+            bossDoor.locked = false;
+            bossDoor.doorRenderer.material = bossDoor.normalMaterial;
+            HUDManager.instance.ActivateBossHUD(false);
+        }
+
+        if(boss.energyLeft <= 0 && lastKey!=null){
+            player.canDrain = true;
+            player.canShock = true;
+            inBossBattle=false;
+            boss.gameObject.SetActive(false);
+            lastKey.SetActive(true);
         }
     }
 

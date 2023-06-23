@@ -6,6 +6,8 @@ TagManager:
   tags:
   - myPlayer
   - Wall
+  - BossBattle
+  - BossEnergyBar
   layers:
   - Default
   - TransparentFX

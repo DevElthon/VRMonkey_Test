@@ -14,7 +14,7 @@ public class Door : MonoBehaviour {
 
     public float openDeltaY = 2;
 
-
+    public bool bossDoor;
     Vector3 startingPos;
     Vector3 targetPos;
 
@@ -37,7 +37,7 @@ public class Door : MonoBehaviour {
             }
             else
             {
-                if (GameLogic.instance.keys > 0)
+                if (GameLogic.instance.keys > 0 && !bossDoor)
                 {
                     GameLogic.instance.useKey();
                     doorRenderer.material = normalMaterial;
@@ -79,6 +79,11 @@ public class Door : MonoBehaviour {
                 doorObject.transform.position = targetPos;
                 state = State.open;
             }
+        }
+
+        if(GameLogic.instance.inBossBattle){
+            state = State.closed;
+            doorObject.transform.position = startingPos;
         }
 	}
 }

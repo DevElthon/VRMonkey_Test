@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class ProgressBar : MonoBehaviour {
 
-
 	protected float maxValue;
     protected float minValue;
     protected float currentValue;
@@ -15,11 +14,11 @@ public class ProgressBar : MonoBehaviour {
 
 
 	public void SetInitialValues(float max,float min, float initial){
-		fillTransform= transform.GetChild(0).GetComponent<RectTransform>();
+		fillTransform = transform.GetChild(0).GetComponent<RectTransform>();
 		maxValue= max;
 		minValue= min;
 		currentValue= initial;
-		fillMaxWidth= fillTransform.sizeDelta.x;
+        GetFillMaxWidth(fillTransform.sizeDelta.x);
 
         if (barText != null)
         {
@@ -27,6 +26,9 @@ public class ProgressBar : MonoBehaviour {
         }
     }
 
+    public void GetFillMaxWidth(float maxWidth){
+        fillMaxWidth = maxWidth;
+    }
 
     public void UpdateMaxValue(float val)
     {
@@ -44,7 +46,6 @@ public class ProgressBar : MonoBehaviour {
         if (!reversed)
         {
             fillTransform.sizeDelta = new Vector2(((currentValue - minValue) / (maxValue - minValue)) * fillMaxWidth, fillTransform.sizeDelta.y);
-
         }
         else
         {
@@ -61,6 +62,4 @@ public class ProgressBar : MonoBehaviour {
             barText.text = currentValue + "/" + maxValue;
         }
 	}
-
-
 }

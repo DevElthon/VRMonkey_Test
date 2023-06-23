@@ -8,6 +8,10 @@ public class HUDManager : MonoBehaviour {
     public bool startWithFadeIn = true;
     public Image blackScreen;
     public Image whiteScreen;
+
+    [Header("Boss Battle")]
+    public GameObject bossHud;
+
     [Header("Death")]
     public Image whiteOverlay;
     public Image blackOverlay;
@@ -110,6 +114,10 @@ public class HUDManager : MonoBehaviour {
         StartCoroutine(FlashWhiteRoutine(time));
     }
 
+    public void ActivateBossHUD(bool value){
+        bossHud.SetActive(value);
+    }
+
     public IEnumerator FlashWhiteRoutine(float time)
     {
         float initialTime = Time.realtimeSinceStartup;
@@ -131,7 +139,4 @@ public class HUDManager : MonoBehaviour {
         }
         whiteScreen.color = new Color(whiteScreen.color.r, whiteScreen.color.g, whiteScreen.color.b, 0);
     }
-
-
-
 }

@@ -44,6 +44,8 @@ public class AIAgent : MonoBehaviour {
     public ParticleSystem stunParticles;
     public Light searchLight;
     public StealthPlayerController player;
+    public ProgressBar energyBar;
+    public bool thisIsTheBoss;
 
     float maxLightRange;
     float maxSightRange;
@@ -58,7 +60,12 @@ public class AIAgent : MonoBehaviour {
     bool ignoreLoseSight = false;
     public Camera cam;
     void Awake()
-    {
+    {   
+        if(thisIsTheBoss && energyBar == null){
+            HUDManager.instance.ActivateBossHUD(true);
+            energyBar = GameObject.FindGameObjectWithTag("BossEnergyBar").GetComponent<ProgressBar>();
+        }
+
         initialPosition = transform.position;
         initialRotation = transform.rotation;
 
@@ -80,6 +87,11 @@ public class AIAgent : MonoBehaviour {
 
         patrolPost = new GameObject().transform;
         patrolPost.position = transform.position;
+
+        if (energyBar != null)
+        {
+            energyBar.SetInitialValues(character.maxDrainEnergy, 0, character.energyLeft);
+        }
 
         //aiSight = GetComponentInChildren<AISight>();
     }
@@ -330,15 +342,30 @@ public class AIAgent : MonoBehaviour {
     }
 
     public void DealDamage(float val){
-        StopAllCoroutines();
-        StartCoroutine(ShutDownEffect());
-        searchLight.enabled = false;
-        navAgent.ForceStop();
-        GameLogic.instance.RemoveChaser();
-        aiEnabled = false;
-        audioSource.PlayOneShot(AudioManager.getInstance().playerHit);
         character.energyLeft -= val;
-        SetEnergyFraction(character.energyLeft);
+        if(energyBar!=null)
+            energyBar.UpdateBar(character.energyLeft);
+        CheckDeath();
+    }
+
+    private void CheckDeath(){
+        if(character.energyLeft <= 0){
+            StopAllCoroutines();
+            StartCoroutine(ShutDownEffect());
+            searchLight.enabled = false;
+            navAgent.ForceStop();
+            GameLogic.instance.RemoveChaser();
+            aiEnabled = false;
+            audioSource.PlayOneShot(AudioManager.getInstance().playerHit);
+            SetEnergyFraction(character.energyLeft);
+        }
+    }
+
+    public void ResetEnergy()
+    {
+        character.energyLeft = character.maxDrainEnergy;
+        if(energyBar!=null)
+            energyBar.UpdateBar(character.energyLeft);
     }
 
     IEnumerator ShutDownEffect(){
